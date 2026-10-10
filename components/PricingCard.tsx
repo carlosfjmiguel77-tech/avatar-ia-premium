@@ -1,12 +1,15 @@
-import { Check } from 'lucide-react'
-import { Button } from './Button'
+'use client'
+
+import Link from 'next/link'
+import { Check, ArrowRight } from 'lucide-react'
 
 interface PricingCardProps {
   name: string
   price: string
   description: string
   features: string[]
-  popular?: boolean
+  popular: boolean
+  cta: string
 }
 
 export default function PricingCard({
@@ -14,13 +17,33 @@ export default function PricingCard({
   price,
   description,
   features,
-  popular = false
+  popular,
+  cta
 }: PricingCardProps) {
   return (
-    <div className={`price-card ${popular ? 'popular' : ''}`}>
-      <h3 className="text-2xl font-bold mb-2">{name}</h3>
-      <div className="text-4xl font-bold mb-2">{price}</div>
-      <p className="text-dark-300 text-sm mb-6">{description}</p>
+    <div
+      className={`relative card transition-all ${
+        popular
+          ? 'ring-2 ring-pink-500 md:scale-105 shadow-2xl shadow-pink-500/20'
+          : 'hover:bg-dark-700'
+      }`}
+    >
+      {popular && (
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-bold">
+          Mais popular
+        </div>
+      )}
+
+      <div className="mb-6">
+        <h3 className="text-2xl font-bold mb-1">{name}</h3>
+        <p className="text-sm text-dark-300">{description}</p>
+      </div>
+
+      <div className="mb-6">
+        <span className="text-5xl font-black text-pink-400">{price}</span>
+        <span className="text-dark-300 ml-2">uma vez</span>
+      </div>
+
       <ul className="space-y-3 mb-8">
         {features.map((feature, idx) => (
           <li key={idx} className="flex items-start gap-3 text-dark-200">
@@ -29,9 +52,22 @@ export default function PricingCard({
           </li>
         ))}
       </ul>
-      <Button variant={popular ? 'primary' : 'secondary'} className="w-full">
-        Escolher
-      </Button>
+
+      <Link
+        href="/auth/signup"
+        className={`btn w-full flex items-center justify-center gap-2 ${
+          popular ? 'btn-primary' : 'btn-secondary'
+        }`}
+      >
+        {cta}
+        <ArrowRight size={18} />
+      </Link>
+
+      {popular && (
+        <p className="text-center text-xs text-pink-400 mt-4 font-semibold">
+          ✓ Melhor custo-benefício
+        </p>
+      )}
     </div>
   )
 }
