@@ -1,30 +1,22 @@
-import axios from 'axios'
-
-const HF_API_KEY = process.env.HUGGINGFACE_API_KEY
-const HF_API_URL = 'https://api-inference.huggingface.co/models'
-
-if (!HF_API_KEY) {
-  console.warn('HUGGINGFACE_API_KEY não configurada')
-}
-
-export async function generateImage(prompt: string) {
+async function generateAvatarImage(prompt: string, style: string = 'realistic') {
   try {
-    const response = await axios.post(
-      `${HF_API_URL}/stabilityai/stable-diffusion-xl-base-1.0`,
-      { inputs: prompt },
+    const response = await fetch(
+      'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
       {
-        headers: {
-          Authorization: `Bearer ${HF_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        responseType: 'arraybuffer'
+        headers: { Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}` },
+        method: 'POST',
+        body: JSON.stringify({
+          inputs: `${prompt}, ${style} style, professional photo, high quality, premium`,
+        }),
       }
     )
 
-    const base64 = Buffer.from(response.data).toString('base64')
-    return `data:image/png;base64,${base64}`
+    const result = await response.blob()
+    return result
   } catch (error) {
     console.error('Erro ao gerar imagem:', error)
     throw error
   }
 }
+
+export { generateAvatarImage }

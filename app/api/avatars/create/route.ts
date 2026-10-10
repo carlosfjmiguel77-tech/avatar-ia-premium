@@ -1,34 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const { userId, name, style, description } = await request.json()
+    const { name, style, description } = await req.json()
+    const { data: { session } } = await supabase.auth.getSession()
 
-    if (!userId || !name) {
-      return NextResponse.json({ error: 'UserId and name required' }, { status: 400 })
+    if (!session) {
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
     }
 
     const { data, error } = await supabase
       .from('avatars')
-      .insert([
-        {
-          user_id: userId,
-          name,
-          style,
-          description,
-          created_at: new Date()
-        }
-      ])
+      .insert({
+        user_id: session.user.id,
+        name,
+        style,
+        description
+      })
       .select()
+      .single()
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 })
-    }
+    if (error) throw error
 
-    return NextResponse.json({ avatar: data[0], message: 'Avatar created successfully' }, { status: 201 })
+    return NextResponse.json({ avatar: data })
   } catch (error) {
-    console.error('Avatar Creation Error:', error)
-    return NextResponse.json({ error: 'Failed to create avatar' }, { status: 500 })
+    console.error('Erro ao criar avatar:', error)
+    return NextResponse.json({ error: 'Erro ao criar avatar' }, { status: 500 })
   }
 }
